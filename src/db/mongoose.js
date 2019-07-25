@@ -11,18 +11,3 @@ mongoose
   .catch(error => {
     console.log("Error Connecting", error);
   });
-
-const Task = mongoose.model("Task", {
-  title: {
-    type: String
-  },
-  description: {
-    type: String,
-    trim: true,
-    required: true
-  },
-  completed: {
-    type: Boolean,
-    default: false
-  }
-});
