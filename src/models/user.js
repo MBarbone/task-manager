@@ -7,7 +7,8 @@ const User = mongoose.model("User", {
     required: true
   },
   age: {
-    type: Number
+    type: Number,
+    default: 0
   },
   email: {
     type: String,
