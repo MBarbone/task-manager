@@ -46,6 +46,49 @@ app.post("/users", async (req, res) => {
   }
 });
 
+// Update User
+app.patch("/users/:id", async (req, res) => {
+  const updates = Object.keys(req.body);
+  const allowedUpdates = ["name", "email", "password", "age"];
+  const isValidUpdate = updates.every(update =>
+    allowedUpdates.includes(update)
+  );
+
+  if (!isValidUpdate) {
+    return res.status(400).send({ error: "Ivalid updates" });
+  }
+
+  try {
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+
+    if (!user) {
+      return res.status(404).send();
+    }
+
+    res.send(user);
+  } catch (e) {
+    res.status(400).send();
+  }
+});
+
+// Delete User
+app.delete("/users/:id", async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      return res.status(404).send({ error: "User not found" });
+    }
+
+    res.send(user);
+  } catch (e) {
+    res.status(500).send();
+  }
+});
+
 // Read all Tasks
 app.get("/tasks", async (req, res) => {
   try {
@@ -81,6 +124,45 @@ app.post("/tasks", async (req, res) => {
     res.send(task);
   } catch (e) {
     res.status(400).send(e);
+  }
+});
+
+// Update Task
+
+app.patch("/tasks/:id", async (req, res) => {
+  const allowedUpdates = ["description", "completed"];
+  const updates = Object.keys(req.body);
+  const isValidUpdate = updates.every(update =>
+    allowedUpdates.includes(update)
+  );
+
+  if (!isValidUpdate) {
+    return res.status(400).send({ error: "Invalid Updates!" });
+  }
+
+  try {
+    const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+
+    res.send(task);
+  } catch (e) {
+    res.status(400).send();
+  }
+});
+
+// Delete Task
+app.delete("/tasks/:id", async (req, res) => {
+  try {
+    const task = await Task.findByIdAndDelete(req.params.id);
+
+    if (!task) {
+      return res.status(404).send({ error: "Task not found" });
+    }
+    res.send(task);
+  } catch (e) {
+    res.status(500).send();
   }
 });
 
