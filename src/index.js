@@ -1,170 +1,43 @@
 const express = require("express");
 require("./db/mongoose");
-const User = require("./models/user");
-const Task = require("./models/task");
+const userRouter = require("./routers/user-routes");
+const taskRouter = require("./routers/task-routes");
 
 const app = express();
 
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(userRouter);
+app.use(taskRouter);
 
-// READ all Users
-app.get("/users", async (req, res) => {
-  try {
-    const users = await User.find({});
-    res.send(users);
-  } catch (e) {
-    res.status(500).send();
-  }
-});
+const jwt = require("jsonwebtoken");
 
-// READ User by ID
-app.get("/users/:id", async (req, res) => {
-  const _id = req.params.id;
+const myFunction = async () => {
+  const token = jwt.sign({ _id: "abc123" }, "qwertysecret", {
+    expiresIn: "7 days"
+  });
 
-  try {
-    const user = await User.findById(_id);
-    if (!user) {
-      return res.status(404).send();
-    }
-    res.send(user);
-  } catch (e) {
-    res.status(500).send();
-  }
-});
+  const data = jwt.verify(token, "qwertysecret");
+};
 
-// Create new User
-app.post("/users", async (req, res) => {
-  const user = new User(req.body);
+myFunction();
 
-  try {
-    await user.save();
-    res.status(201).send(user);
-  } catch (e) {
-    res.status(400).send(e);
-  }
-});
+// const bcrypt = require("bcryptjs");
 
-// Update User
-app.patch("/users/:id", async (req, res) => {
-  const updates = Object.keys(req.body);
-  const allowedUpdates = ["name", "email", "password", "age"];
-  const isValidUpdate = updates.every(update =>
-    allowedUpdates.includes(update)
-  );
+// const myFunction = async () => {
+//   const password = "red12345!";
+//   const hashedPassword = await bcrypt.hash(password, 8);
 
-  if (!isValidUpdate) {
-    return res.status(400).send({ error: "Ivalid updates" });
-  }
+//   console.log(password);
+//   console.log(hashedPassword);
 
-  try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    });
+//   const isMatch = await bcrypt.compare("red12345!", hashedPassword);
 
-    if (!user) {
-      return res.status(404).send();
-    }
+//   console.log(isMatch);
+// };
 
-    res.send(user);
-  } catch (e) {
-    res.status(400).send();
-  }
-});
-
-// Delete User
-app.delete("/users/:id", async (req, res) => {
-  try {
-    const user = await User.findByIdAndDelete(req.params.id);
-
-    if (!user) {
-      return res.status(404).send({ error: "User not found" });
-    }
-
-    res.send(user);
-  } catch (e) {
-    res.status(500).send();
-  }
-});
-
-// Read all Tasks
-app.get("/tasks", async (req, res) => {
-  try {
-    const tasks = await Task.find({});
-    res.send(tasks);
-  } catch (e) {}
-
-  res.status(500).send();
-});
-
-// Read Task by ID
-app.get("/tasks/:id", async (req, res) => {
-  const _id = req.params.id;
-
-  try {
-    const task = await Task.findById(_id);
-    if (!task) {
-      return res.status(404).send();
-    }
-    res.send(task);
-  } catch (e) {
-    res.status(500).send(e);
-  }
-});
-
-// CREATE New Task
-app.post("/tasks", async (req, res) => {
-  const task = new Task(req.body);
-
-  try {
-    await task.save();
-    res.status(201);
-    res.send(task);
-  } catch (e) {
-    res.status(400).send(e);
-  }
-});
-
-// Update Task
-
-app.patch("/tasks/:id", async (req, res) => {
-  const allowedUpdates = ["description", "completed"];
-  const updates = Object.keys(req.body);
-  const isValidUpdate = updates.every(update =>
-    allowedUpdates.includes(update)
-  );
-
-  if (!isValidUpdate) {
-    return res.status(400).send({ error: "Invalid Updates!" });
-  }
-
-  try {
-    const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    });
-
-    res.send(task);
-  } catch (e) {
-    res.status(400).send();
-  }
-});
-
-// Delete Task
-app.delete("/tasks/:id", async (req, res) => {
-  try {
-    const task = await Task.findByIdAndDelete(req.params.id);
-
-    if (!task) {
-      return res.status(404).send({ error: "Task not found" });
-    }
-    res.send(task);
-  } catch (e) {
-    res.status(500).send();
-  }
-});
+// myFunction();
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
