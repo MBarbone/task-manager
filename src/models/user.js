@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const Task = require("../models/task");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -42,6 +43,12 @@ const userSchema = new mongoose.Schema({
       }
     }
   ]
+});
+
+userSchema.virtual("tasks", {
+  ref: "Task",
+  localField: "_id",
+  foreignField: "author"
 });
 
 userSchema.methods.toJSON = function() {
@@ -92,6 +99,13 @@ userSchema.pre("save", async function(next) {
   next();
 });
 
+// Delete User tasks when profile is deleted
+userSchema.pre("remove", async function(next) {
+  const user = this;
+  await Task.deleteMany({ author: user._id });
+
+  next();
+});
 const User = mongoose.model("User", userSchema);
 
 module.exports = User;
