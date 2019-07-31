@@ -1,4 +1,3 @@
-require("dotenv").config();
 const express = require("express");
 const multer = require("multer");
 const User = require("../models/user");
