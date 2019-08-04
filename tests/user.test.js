@@ -100,3 +100,38 @@ test("Should not delete account for unauthenticate user", async () => {
     .send()
     .expect(401);
 });
+
+test("Should store user profile image", async () => {
+  await request(app)
+    .post("/users/me/avatar")
+    .set("Authorization", `Bearer ${userOne.tokens[0].token}`)
+    .attach("avatar", "tests/fixtures/profile-pic.jpg")
+    .expect(200);
+
+  const user = await User.findById(userOneId);
+
+  expect(user.avatar).toEqual(expect.any(Buffer));
+});
+
+test("Should update valid user fields", async () => {
+  await request(app)
+    .patch("/users/me")
+    .send({
+      name: "Anne"
+    })
+    .set("Authorization", `Bearer ${userOne.tokens[0].token}`)
+    .expect(200);
+
+  const user = await User.findById(userOneId);
+  expect(user.name).toBe("Anne");
+});
+
+test("Should not update user fields", async () => {
+  await request(app)
+    .patch("/users/me")
+    .send({
+      location: "Boston"
+    })
+    .set("Authorization", `Bearer ${userOne.tokens[0].token}`)
+    .expect(400);
+});
